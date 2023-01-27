@@ -4,16 +4,16 @@ const ctx = canvas.getContext('2d')
 const logo = document.getElementById("logo")
 
 const background = new Image()
-background.src = "../images/background.png"
+background.src = "images/background.png"
 
 const skullyImage = new Image()
-skullyImage.src = "../images/player.png"
+skullyImage.src = "images/player.png"
 
 const collectible = new Image()
-collectible.src = "../images/collectible.png"
+collectible.src = "images/collectible.png"
 
 const crossbone = new Image() 
-crossbone.src = "../images/crossbones.png"
+crossbone.src = "images/crossbones.png"
 
 let startingX = 540
 let startingY = 400
