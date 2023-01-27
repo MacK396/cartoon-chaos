@@ -12,6 +12,9 @@ skullyImage.src = "../images/player.png"
 const collectible = new Image()
 collectible.src = "../images/collectible.png"
 
+const crossbone = new Image() 
+crossbone.src = "../images/crossbones.png"
+
 let startingX = 540
 let startingY = 400
 
@@ -20,6 +23,7 @@ let startingY = 400
 let createCollectiblesId
 let animationLoopId
 let gravityLoopId
+let createCrossbonesId
 
 let gameOn = false
 
@@ -35,6 +39,7 @@ constructor() {
   this.height = 20; 
   this.gravity= 0.1;
   this.gravitySpeed = 1;
+  this.points = 1;
 }
   update() {
     this.gravitySpeed = this.gravitySpeed + this.gravity;
@@ -47,6 +52,30 @@ draw() {
   ctx.drawImage(collectible, this.x, this.y, 200, 150) 
 }
 }
+
+class Crossbone {
+  constructor() {
+    this.x = Math.random() * 700; 
+    this.y = 0; 
+    this.width = 20 + Math.floor(Math.random() * 350);
+    this.height = 20;
+    this.gravity= 0.1;
+    this.gravitySpeed = 1;
+    this.points = -1;
+  }
+  update() {
+    this.gravitySpeed = this.gravitySpeed + this.gravity;
+  }
+  newPosition() {
+  this.y = this.y + this.gravitySpeed;
+    }
+
+draw() {
+  ctx.drawImage(crossbone, this.x, this.y, 200, 150) 
+}
+
+}
+
 
 
 const skully = {
@@ -81,15 +110,17 @@ const skully = {
     }
   }
 
-  function checkCollision(collectible, i) {
+  function checkCollision(collectible, i, array) {
     if (skully.y < collectible.y + collectible.height
       && collectible.y < skully.y + skully.height 
       &&  collectible.x < skully.x + skully.width 
       && collectible.x + collectible.width > skully.x) {
-        score++
-        collectiblesArray.splice(i, 1)
+        score+= collectible.points
+        array.splice(i, 1)
         console.log("Colliding")
       }
+
+    
   }
 
   let collectiblesArray = []
@@ -100,6 +131,21 @@ const skully = {
       collectiblesArray.push(new Collectible())
     }, 3750)
   }
+
+let crossboneArray = []
+
+function createCrossbones() {
+
+setTimeout(() => {
+  createCrossbonesId = setInterval(() => {
+    crossboneArray.push(new Crossbone())
+  }, 3750)
+  
+}, 1875)
+
+}
+
+
   
   function animationLoop() {
     animationLoopId = setInterval(() => {
@@ -108,21 +154,39 @@ const skully = {
       ctx.clearRect(0, 0, 1200, 600)
       
       ctx.drawImage(background, 0, 0, 1200, 600)
+      ctx.fillStyle = "rgba(246, 246, 246, 0.5)"
+      ctx.fillRect(0, 0, 1200, 600)
+
       
       
       skully.draw()
     // ctx.drawImage(skullyImage, 100, 100, 120, 100)
       for (let i = 0; i < collectiblesArray.length; i++) {
-        // if (collectiblesArray[i].sharedX < -138) {
-        //   collectiblesArray.splice(i, 1)
-        // }
+       
        
         collectiblesArray[i].newPosition()
         collectiblesArray[i].draw()
-        checkCollision(collectiblesArray[i], i)
+        if (collectiblesArray[i].y > canvas.height) {
+          collectiblesArray.splice(i, 1)
+        }
+        checkCollision(collectiblesArray[i], i, collectiblesArray)
+      }
+
+      for (let i = 0; i < crossboneArray.length; i++) {     
+       
+        crossboneArray[i].newPosition()
+        crossboneArray[i].draw()
+        if (crossboneArray[i].y > canvas.height) {
+          crossboneArray.splice(i, 1)
+        }
+        checkCollision(crossboneArray[i], i, crossboneArray)
       }
       showScore()
       if (score >= 7) {
+        gameOver()
+      }
+
+      if (score < 0) {
         gameOver()
       }
     }, 16)
@@ -182,6 +246,7 @@ const skully = {
      gameOn = true
      
      collectiblesArray = []
+     crossboneArray = []
      skully.x = startingX; 
      skully.y = startingY; 
 
@@ -190,6 +255,7 @@ const skully = {
   
     animationLoop()
     createCollectibles()
+    createCrossbones() 
     gravityLoop()
       
       
@@ -202,6 +268,7 @@ const skully = {
       clearInterval(animationLoopId)
       clearInterval(gravityLoopId)
       clearInterval(createCollectiblesId)
+      clearInterval(createCrossbonesId)
     
     
       ctx.clearRect(0, 0, 1200, 600)
@@ -211,11 +278,11 @@ const skully = {
       if (score > 6) {
         ctx.fillStyle = 'white'
         ctx.font = '60px serif'
-        ctx.fillText("You win!", 500, 300)
+        ctx.fillText("Winner!", 500, 300)
       } else {
         ctx.fillStyle = 'white'
         ctx.font = '60px serif'
-        ctx.fillText("You lose!", 500, 300)
+        ctx.fillText("Game Over! Try again.", 300, 300)
       }
     
       collectiblesArray = []
@@ -230,8 +297,13 @@ function gravityLoop () {
       collectiblesArray[i].update()
 
     }
+    for (let i = 0; i < crossboneArray.length; i++) {
+      crossboneArray[i].update()
+
+    }
   }, 50)
   
+
   
 }
 
